@@ -4,7 +4,7 @@ A microservices-based e-wallet application built with **Java + Spring Boot + MyS
 Features wallet-to-wallet transfers, add money via payment gateway, and QR code payments.
 
 ## 🛠 Tech Stack
-- Java 17 + Spring Boot
+- Java 21 + Spring Boot
 - MySQL + JPA/Hibernate
 - Docker + Kubernetes (later phases)
 - Spring Cloud (Eureka, Config Server, API Gateway)
