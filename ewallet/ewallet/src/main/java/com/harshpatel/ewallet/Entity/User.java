@@ -1,9 +1,6 @@
 package com.harshpatel.ewallet.Entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import jakarta.persistence.*;
 
 @Entity
@@ -18,7 +15,12 @@ public class User {
     private Long id;
 
     private String name;
+
+    @Column(unique = true)
     private String email;
+
     private String password;
     private Double balance;
+
+    private String role = "USER";
 }
