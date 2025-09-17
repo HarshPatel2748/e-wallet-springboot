@@ -7,6 +7,7 @@ import com.harshpatel.ewallet.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -49,7 +50,7 @@ public class TransactionService {
         debitTransaction.setReceiverId(receiverId);
         debitTransaction.setAmount(amount);
         debitTransaction.setType("DEBIT");
-        debitTransaction.setTimestamp(java.time.LocalDateTime.now());
+        debitTransaction.setTimestamp(new Date());
         transactionRepository.save(debitTransaction);
 
         Transaction creditTransaction = new Transaction();
@@ -57,7 +58,7 @@ public class TransactionService {
         creditTransaction.setReceiverId(receiverId);
         creditTransaction.setAmount(amount);
         creditTransaction.setType("CREDIT");
-        creditTransaction.setTimestamp(java.time.LocalDateTime.now());
+        creditTransaction.setTimestamp(new Date());
         transactionRepository.save(creditTransaction);
 
         return debitTransaction;

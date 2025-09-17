@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Entity
 @Data
@@ -23,5 +24,5 @@ public class Transaction {
     private Long receiverId;
     private Double amount;
     private String type;
-    private LocalDateTime timestamp;
+    private Date timestamp;
 }
