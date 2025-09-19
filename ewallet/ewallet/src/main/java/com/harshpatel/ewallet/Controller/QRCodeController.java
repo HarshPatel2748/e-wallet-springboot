@@ -60,4 +60,27 @@ public class QRCodeController{
             return ResponseEntity.status(500).body("Error generating order QR code: " + e.getMessage());
         }
     }
+
+
+    @PostMapping("/generate-paymentlink-qr")
+    public ResponseEntity<?> generatePaymentLinkQRCode(@RequestBody Map<String, Object> request){
+        try{
+            Long userId = Long.valueOf(request.get("userId").toString());
+            Double amount = Double.valueOf(request.get("amount").toString());
+
+            // Get the Razorpay payment link URL
+            String paymentUrl = paymentService.createPaymentLink(userId, amount);
+
+            // Generate QR code of the payment URL
+            String qrCodeBase64 = qrCodeService.generateQRCode(paymentUrl, 250, 250);
+
+            return ResponseEntity.ok(Map.of(
+                    "paymentUrl", paymentUrl,
+                    "qrCode", qrCodeBase64,
+                    "message", "Payment link QR code generated successfully"
+            ));
+        }catch(Exception e){
+            return ResponseEntity.status(500).body("Error generating payment link QR code: " + e.getMessage());
+        }
+    }
 }

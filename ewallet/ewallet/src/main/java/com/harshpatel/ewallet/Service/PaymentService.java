@@ -49,7 +49,7 @@ public class PaymentService {
         options.put("amount", (int)(amount * 100)); // amount in the smallest currency unit
         options.put("currency", "INR");
         options.put("payment_capture", 1);
-        return razorpayClient.Orders.create(options);
+        return razorpayClient.orders.create(options);
     }
 
 
@@ -77,8 +77,40 @@ public class PaymentService {
         options.put("currency", "INR");
         options.put("payment_capture", 1);
 
-        Order order = razorpayClient.Orders.create(options);
+        Order order = razorpayClient.orders.create(options);
 
         return "orderId:" + order.get("id") + ",userId:" + userId + ",amount:" + amount;
     }
+
+    public String createPaymentLink(Long userId, Double amount) throws RazorpayException {
+        // Get user details
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        JSONObject paymentLinkRequest = new JSONObject();
+        paymentLinkRequest.put("amount", (int)(amount * 100)); // amount in paise
+        paymentLinkRequest.put("currency", "INR");
+
+        // Customer details
+        JSONObject customer = new JSONObject();
+        customer.put("name", user.getName());
+        customer.put("email", user.getEmail());
+        paymentLinkRequest.put("customer", customer);
+
+        // Notify via SMS & Email
+        JSONObject notify = new JSONObject();
+        notify.put("sms", true);
+        notify.put("email", true);
+        paymentLinkRequest.put("notify", notify);
+
+        // Optional: Add a description
+        paymentLinkRequest.put("description", "Adding money to wallet");
+
+        // Create Payment Link
+        com.razorpay.PaymentLink paymentLink = razorpayClient.paymentLink.create(paymentLinkRequest);
+
+        // Return short URL for redirect / QR
+        return paymentLink.get("short_url").toString();
+    }
+
 }
