@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Payment</title>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+  <button id="payButton">Pay Now</button>
+
+  <script>
+    document.getElementById("payButton").onclick = async function () {
+      // 1. Call your backend to create order
+      const res = await fetch("http://localhost:8080/api/payment/create-order", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ amount: 500.0 })
+      });
+      const order = await res.json();
+      console.log(order);
+
+      // 2. Configure Razorpay Checkout
+      const options = {
+        key: "rzp_test_mWNReY039IqwYl", // your Razorpay public key
+        amount: order.amount,
+        currency: order.currency,
+        order_id: order.id,
+        name: "My E-wallet",
+        description: "Wallet Top-up",
+        handler: function (response) {
+          console.log(response);
+          // send response.razorpay_payment_id, order_id, signature to backend verify endpoint
+        }
+      };
+      const rzp = new Razorpay(options);
+      rzp.open();
+    };
+  </script>
+</body>
+</html>

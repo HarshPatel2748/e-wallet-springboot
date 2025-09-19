@@ -1,20 +1,29 @@
 package com.harshpatel.ewallet.Security;
 
+import com.harshpatel.ewallet.Entity.User;
+import com.harshpatel.ewallet.Repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -33,8 +42,13 @@ public class JwtFilter extends OncePerRequestFilter {
                     throw new RuntimeException("Token is expired");
                 }
 
-                // ✅ Here you would normally set Authentication in SecurityContext
-                // For now we’re only validating token existence
+                User user = userRepository.findByEmail(email)
+                        .orElseThrow(() -> new RuntimeException("User not found"));
+
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(user, null, new ArrayList<>());
+
+                SecurityContextHolder.getContext().setAuthentication(authentication);
 
             } catch (Exception ex) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

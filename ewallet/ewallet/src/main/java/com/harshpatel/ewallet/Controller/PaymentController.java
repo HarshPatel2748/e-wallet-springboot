@@ -1,10 +1,12 @@
 package com.harshpatel.ewallet.Controller;
 
+import com.harshpatel.ewallet.Entity.User;
 import com.harshpatel.ewallet.Service.PaymentService;
 import com.razorpay.Order;
 import com.razorpay.RazorpayException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,10 +39,10 @@ public class PaymentController {
     @PostMapping("/add-money")
     public ResponseEntity<?> addMoney(@RequestBody Map<String, Object> request){
         try{
-            Long userId = Long.valueOf(request.get("userId").toString());
+            User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             Double amount = Double.valueOf(request.get("amount").toString());
 
-            return ResponseEntity.ok(paymentService.addMoney(userId, amount));
+            return ResponseEntity.ok(paymentService.addMoney(currentUser.getId(), amount));
 
         }catch (Exception e){
             return ResponseEntity.badRequest().body("Error adding money: " + e.getMessage());

@@ -6,6 +6,8 @@ import com.harshpatel.ewallet.Entity.User;
 import com.harshpatel.ewallet.Repository.UserRepository;
 import com.harshpatel.ewallet.Security.JwtUtil;
 import com.harshpatel.ewallet.Service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,8 +20,11 @@ import java.util.Map;
 @RequestMapping("/api/users")
 public class UserController {
 
+    @Autowired
     private final UserService userService;
+    @Autowired
     private final UserRepository userRepository;
+    @Autowired
     private final JwtUtil jwtUtil;
 
     @Autowired
@@ -98,5 +103,23 @@ public class UserController {
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Credentials");
         }
+    }
+
+
+    @GetMapping("/me")
+    public ResponseEntity<User> getCurrentUser(HttpServletRequest request){
+        String authHeader = request.getHeader("Authorization");
+
+        if(authHeader == null || !authHeader.startsWith("Bearer ")){
+            return ResponseEntity.status(401).build();
+        }
+
+        String token = authHeader.substring(7);
+
+        String email = jwtUtil.extractEmail(token);
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+        return ResponseEntity.ok(user);
     }
 }
