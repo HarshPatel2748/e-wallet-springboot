@@ -1,7 +1,9 @@
 package com.harshpatel.ewallet.Service;
 
+import com.harshpatel.ewallet.Entity.PaymentOrder;
 import com.harshpatel.ewallet.Entity.Transaction;
 import com.harshpatel.ewallet.Entity.User;
+import com.harshpatel.ewallet.Repository.PaymentOrderRepository;
 import com.harshpatel.ewallet.Repository.TransactionRepository;
 import com.harshpatel.ewallet.Repository.UserRepository;
 import com.razorpay.Order;
@@ -25,6 +27,9 @@ public class PaymentService {
     @Autowired
     private final TransactionRepository transactionRepository;
 
+    @Autowired
+    private final PaymentOrderRepository paymentOrderRepository;
+
     private RazorpayClient razorpayClient;
 
     @Value("${razorpay.key-id}")
@@ -34,9 +39,10 @@ public class PaymentService {
     private String secret;
 
     public PaymentService(UserRepository userRepository,
-                          TransactionRepository transactionRepository){
+                          TransactionRepository transactionRepository, PaymentOrderRepository paymentOrderRepository){
         this.userRepository = userRepository;
         this.transactionRepository = transactionRepository;
+        this.paymentOrderRepository = paymentOrderRepository;
     }
 
     @PostConstruct
@@ -79,7 +85,14 @@ public class PaymentService {
 
         Order order = razorpayClient.orders.create(options);
 
-        return "orderId:" + order.get("id") + ",userId:" + userId + ",amount:" + amount;
+        PaymentOrder paymentOrder = new PaymentOrder();
+        paymentOrder.setRazorpayOrderId(order.get("id"));
+        paymentOrder.setUserId(userId);
+        paymentOrder.setAmount(amount);
+        paymentOrder.setStatus("CREATED");
+        paymentOrderRepository.save(paymentOrder);
+
+        return "orderId:" + order.get("id");
     }
 
     public String createPaymentLink(Long userId, Double amount) throws RazorpayException {
@@ -113,4 +126,18 @@ public class PaymentService {
         return paymentLink.get("short_url").toString();
     }
 
+//    public boolean verifySignature(String payload, String razorpaySignature, String secret)throws Exception{
+//        String excpectedSignature = hmacSha256(payload, secret);
+//        return excpectedSignature.equals(razorpaySignature);
+//    }
+//
+//    private String hmacSha256(String data, String secret)throws Exception{
+//        javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
+//        javax.crypto.spec.SecretKeySpec secretKeySpec =
+//                new javax.crypto.spec.SecretKeySpec(secret.getBytes(), "HmacSHA256");
+//        mac.init(secretKeySpec);
+//
+//        byte[] hash = mac.doFinal(data.getBytes());
+//        return new String(org.apache.commons.codec.binary.Hex.encodeHex(hash));
+//    }
 }
